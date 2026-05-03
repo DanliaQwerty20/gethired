@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Включаем расширения -->
+    <changeSet id="000-extensions" author="get-hired">
+        <sql>CREATE EXTENSION IF NOT EXISTS vector;</sql>
+        <sql>CREATE EXTENSION IF NOT EXISTS "uuid-ossp";</sql>
+    </changeSet>
+
+    <!-- Пользователи -->
+    <changeSet id="001-create-users" author="get-hired">
+        <createTable tableName="users">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="chat_id" type="bigint">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)"/>
+            <column name="first_name" type="varchar(255)"/>
+            <column name="active" type="boolean" defaultValueBoolean="true"/>
+            <column name="state" type="varchar(50)" defaultValue="IDLE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_users_chat_id" tableName="users" unique="true">
+            <column name="chat_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Фильтры -->
+    <changeSet id="002-create-user-filters" author="get-hired">
+        <createTable tableName="user_filters">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_filter_user"
+                             references="users(id)"/>
+            </column>
+            <column name="job_title" type="varchar(255)"/>
+            <column name="location" type="varchar(255)"/>
+            <column name="salary_from" type="int"/>
+            <column name="salary_to" type="int"/>
+            <column name="include_keywords" type="text"/>
+            <column name="exclude_keywords" type="text"/>
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Резюме -->
+    <changeSet id="003-create-resumes" author="get-hired">
+        <createTable tableName="resumes">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_resume_user"
+                             references="users(id)"/>
+            </column>
+            <column name="extracted_text" type="text"/>
+            <column name="file_path" type="varchar(500)"/>
+            <column name="uploaded_at" type="timestamp"/>
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Шаблоны сопроводительных писем -->
+    <changeSet id="004-create-cover-letter-templates" author="get-hired">
+        <createTable tableName="cover_letter_templates">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_cover_user"
+                             references="users(id)"/>
+            </column>
+            <column name="template_text" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Вакансии с вектором -->
+    <changeSet id="005-create-vacancies" author="get-hired">
+        <createTable tableName="vacancies">
+            <column name="external_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(500)"/>
+            <column name="location" type="varchar(255)"/>
+            <column name="salary" type="varchar(255)"/>
+            <column name="description" type="text"/>
+            <column name="url" type="varchar(1024)"/>
+            <column name="published_at" type="timestamp"/>
+            <column name="embedding" type="vector(768)"/>
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_vacancies_published_at" tableName="vacancies">
+            <column name="published_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

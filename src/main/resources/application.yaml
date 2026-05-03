@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: get-hired-bot
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5433/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: public
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    show-sql: true
+  liquibase:
+    change-log: liquibase/changelog.xml
+    default-schema: public
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      embedding:
+        model: nomic-embed-text
+      chat:
+        model: llama3.2
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        dimensions: 768
+
+server:
+  port: 8080
+  shutdown: graceful
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+    username: get_hired_java_bot
+    webhook-path: /webhook
+
+app:
+  crawler:
+    cron: "0 0 9 * * ?"
+  file-storage:
+    upload-dir: uploads
+  public-url: ${PUBLIC_URL:https://4f94-37-128-205-210.ngrok-free.app}
+
+logging:
+  level:
+    com.gethired: DEBUG
