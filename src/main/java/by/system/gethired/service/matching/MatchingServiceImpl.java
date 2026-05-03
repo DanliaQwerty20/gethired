@@ -7,6 +7,8 @@ import by.system.gethired.repository.VacancyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,21 +25,40 @@ public class MatchingServiceImpl implements MatchingService {
     public void processNewVacancies(UserFilter filter, List<Vacancy> vacancies) {
         if (vacancies == null || vacancies.isEmpty()) return;
 
-        List<Vacancy> newVacancies = new ArrayList<>();
+        long chatId = filter.getUser().getChatId();
         for (Vacancy v : vacancies) {
             if (!vacancyRepository.existsByExternalId(v.getExternalId())) {
                 if (matchesKeywords(filter, v.getDescription()) && matchesSalary(filter, v.getSalary())) {
                     vacancyRepository.save(v);
-                    newVacancies.add(v);
+                    sendVacancyWithButtons(chatId, v);
                 }
             }
         }
+    }
 
-        Long chatId = filter.getUser().getChatId();
-        for (Vacancy v : newVacancies) {
-            String message = formatVacancyMessage(v);
-            telegramClient.sendMessage(chatId, message);
-        }
+    private void sendVacancyWithButtons(long chatId, Vacancy v) {
+        String message = String.format("""
+                🔔 **%s**
+                📍 %s
+                💰 %s
+                📝 %s
+                %s
+                """, v.getTitle(), v.getLocation(), v.getSalary(), v.getDescription(), v.getUrl());
+
+        InlineKeyboardMarkup keyboard = InlineKeyboardMarkup.builder()
+                .keyboardRow(List.of(
+                        InlineKeyboardButton.builder()
+                                .text("📄 Сгенерировать резюме")
+                                .callbackData("gen_resume:" + v.getExternalId())
+                                .build(),
+                        InlineKeyboardButton.builder()
+                                .text("✉️ Сопроводительное письмо")
+                                .callbackData("gen_letter:" + v.getExternalId())
+                                .build()
+                ))
+                .build();
+
+        telegramClient.sendMessageWithInlineKeyboard(chatId, message, keyboard);
     }
 
     private boolean matchesKeywords(UserFilter filter, String description) {

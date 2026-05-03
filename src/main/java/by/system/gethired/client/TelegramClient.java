@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.ByteArrayOutputStream;
@@ -63,6 +64,18 @@ public class TelegramClient {
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to download file " + fileId, e);
+        }
+    }
+
+    public void sendMessageWithInlineKeyboard(Long chatId, String text, InlineKeyboardMarkup keyboard) {
+        try {
+            sender.execute(SendMessage.builder()
+                    .chatId(chatId.toString())
+                    .text(text)
+                    .replyMarkup(keyboard)
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException("Failed to send message with keyboard", e);
         }
     }
 }
