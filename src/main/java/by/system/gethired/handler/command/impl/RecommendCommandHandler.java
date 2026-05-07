@@ -7,6 +7,7 @@ import by.system.gethired.entity.Vacancy;
 import by.system.gethired.handler.command.CommandHandler;
 import by.system.gethired.repository.VacancyRepository;
 import by.system.gethired.service.doc.DocumentService;
+import by.system.gethired.service.embedding.VacancyEmbeddingService;
 import by.system.gethired.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class RecommendCommandHandler implements CommandHandler {
     private final UserService userService;
     private final DocumentService documentService;
     private final EmbeddingClient embeddingClient;
+    private final VacancyEmbeddingService vacancyEmbeddingService;
     private final VacancyRepository vacancyRepository;
     private final TelegramClient telegramClient;
 
@@ -57,25 +59,21 @@ public class RecommendCommandHandler implements CommandHandler {
             return;
         }
 
-        // Разбиваем на чанки
+        // Чанкинг и усреднение
         List<String> chunks = splitText(resumeText, CHUNK_SIZE, OVERLAP);
-        // Получаем эмбеддинги для всех чанков
         List<List<Double>> allEmbeddings = embeddingClient.embed(chunks);
-        // Усредняем векторы
-        List<Double> averagedVector = averageVectors(allEmbeddings);
+        List<Double> averaged = averageVectors(allEmbeddings);
 
-        String vectorLiteral = averagedVector.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(",", "[", "]"));
+        // Получаем ID похожих вакансий
+        List<Long> ids = vacancyEmbeddingService.findSimilarVacancyIds(averaged, 5);
+        List<Vacancy> vacancies = vacancyRepository.findAllById(ids);
 
-        List<Vacancy> similar = vacancyRepository.findSimilarVacancies(vectorLiteral, 5);
-
-        if (similar.isEmpty()) {
+        if (vacancies.isEmpty()) {
             telegramClient.sendMessage(chatId, "🔍 Похожих вакансий не найдено.");
             return;
         }
 
-        for (Vacancy v : similar) {
+        for (Vacancy v : vacancies) {
             long extId = v.getExternalId();
             String msg = String.format("🎯 **%s**\n📍 %s\n💰 %s\n%s",
                     v.getTitle(), v.getLocation(), v.getSalary(), v.getUrl());

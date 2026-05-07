@@ -4,13 +4,13 @@ import by.system.gethired.client.TelegramClient;
 import by.system.gethired.entity.UserFilter;
 import by.system.gethired.entity.Vacancy;
 import by.system.gethired.repository.VacancyRepository;
+import by.system.gethired.service.embedding.VacancyEmbeddingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,6 +19,7 @@ public class MatchingServiceImpl implements MatchingService {
 
     private final VacancyRepository vacancyRepository;
     private final TelegramClient telegramClient;
+    private final VacancyEmbeddingService embeddingService;
 
     @Override
     @Transactional
@@ -30,6 +31,8 @@ public class MatchingServiceImpl implements MatchingService {
             if (!vacancyRepository.existsByExternalId(v.getExternalId())) {
                 if (matchesKeywords(filter, v.getDescription()) && matchesSalary(filter, v.getSalary())) {
                     vacancyRepository.save(v);
+                    // Сохраняем эмбеддинг описания
+                    embeddingService.saveEmbedding(v.getExternalId(), buildText(v));
                     sendVacancyWithButtons(chatId, v);
                 }
             }
@@ -65,7 +68,6 @@ public class MatchingServiceImpl implements MatchingService {
         if (description == null) return true;
         String text = description.toLowerCase();
 
-        // include keywords
         if (filter.getIncludeKeywords() != null && !filter.getIncludeKeywords().isBlank()) {
             String[] includes = filter.getIncludeKeywords().toLowerCase().split(",\\s*");
             for (String inc : includes) {
@@ -73,7 +75,6 @@ public class MatchingServiceImpl implements MatchingService {
             }
         }
 
-        // exclude keywords
         if (filter.getExcludeKeywords() != null && !filter.getExcludeKeywords().isBlank()) {
             String[] excludes = filter.getExcludeKeywords().toLowerCase().split(",\\s*");
             for (String exc : excludes) {
@@ -84,17 +85,12 @@ public class MatchingServiceImpl implements MatchingService {
     }
 
     private boolean matchesSalary(UserFilter filter, String salaryText) {
-        // TODO Заглушка salaryText
+        // Простая проверка (можно улучшить)
         return true;
     }
 
-    private String formatVacancyMessage(Vacancy v) {
-        return String.format("""
-                🔔 **%s**
-                📍 %s
-                💰 %s
-                📝 %s
-                %s
-                """, v.getTitle(), v.getLocation(), v.getSalary(), v.getDescription(), v.getUrl());
+    private String buildText(Vacancy v) {
+        return (v.getTitle() != null ? v.getTitle() : "") + " "
+                + (v.getDescription() != null ? v.getDescription() : "");
     }
 }

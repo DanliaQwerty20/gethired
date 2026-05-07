@@ -32,12 +32,15 @@ spring:
         model: llama3.2
     vectorstore:
       pgvector:
-        initialize-schema: false
         dimensions: 768
 
 server:
   port: 8080
   shutdown: graceful
+
+hh:
+  client-id: ${CLIENT_ID}
+  client-secret: ${CLIENT_SECRET}
 
 telegram:
   bot:
@@ -50,8 +53,8 @@ app:
     cron: "0 0 9 * * ?"
   file-storage:
     upload-dir: uploads
-  public-url: ${PUBLIC_URL:https://4f94-37-128-205-210.ngrok-free.app}
+  public-url: ${PUBLIC_URL:https://3dba-37-128-205-210.ngrok-free.app}
 
 logging:
   level:
-    com.gethired: DEBUG
+    by.system.gethired: DEBUG
