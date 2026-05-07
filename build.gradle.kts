@@ -34,6 +34,7 @@ dependencies {
 
     // Spring AI
     implementation("org.springframework.ai:spring-ai-ollama-spring-boot-starter")
+    implementation("org.springframework.ai:spring-ai-pgvector-store")
 
     // OpenAPI documentation
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")

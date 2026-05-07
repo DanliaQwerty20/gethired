@@ -45,9 +45,6 @@ public class Vacancy {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-    @Column(name = "embedding", columnDefinition = "vector(768)")
-    private float[] embedding;
-
     @Version
     @Column(name = "version", nullable = false)
     private Long version;

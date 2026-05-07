@@ -17,7 +17,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional(readOnly = true)
     @Override
     public Optional<UserFilter> getFilter(User user) {
-        return filterRepository.findByUser_Id(user.getId());
+        return filterRepository.findWithUser(user.getId());
     }
 
     @Transactional
@@ -30,7 +30,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional
     @Override
     public void updateJobTitle(User user, String jobTitle) {
-        UserFilter filter = filterRepository.findByUser_Id(user.getId())
+        UserFilter filter = filterRepository.findWithUser(user.getId())
                 .orElseGet(() -> UserFilter.create(user));
         filter.setJobTitle(jobTitle);
         filterRepository.save(filter);
@@ -39,7 +39,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional
     @Override
     public void updateLocation(User user, String location) {
-        UserFilter filter = filterRepository.findByUser_Id(user.getId())
+        UserFilter filter = filterRepository.findWithUser(user.getId())
                 .orElseGet(() -> UserFilter.create(user));
         filter.setLocation(location);
         filterRepository.save(filter);
@@ -48,7 +48,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional
     @Override
     public void updateSalaryFrom(User user, Integer salaryFrom) {
-        UserFilter filter = filterRepository.findByUser_Id(user.getId())
+        UserFilter filter = filterRepository.findWithUser(user.getId())
                 .orElseGet(() -> UserFilter.create(user));
         filter.setSalaryFrom(salaryFrom);
         filterRepository.save(filter);
@@ -57,7 +57,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional
     @Override
     public void updateSalaryTo(User user, Integer salaryTo) {
-        UserFilter filter = filterRepository.findByUser_Id(user.getId())
+        UserFilter filter = filterRepository.findWithUser(user.getId())
                 .orElseGet(() -> UserFilter.create(user));
         filter.setSalaryTo(salaryTo);
         filterRepository.save(filter);
@@ -66,7 +66,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional
     @Override
     public void updateIncludeKeywords(User user, String keywords) {
-        UserFilter filter = filterRepository.findByUser_Id(user.getId())
+        UserFilter filter = filterRepository.findWithUser(user.getId())
                 .orElseGet(() -> UserFilter.create(user));
         filter.setIncludeKeywords(keywords);
         filterRepository.save(filter);
@@ -75,7 +75,7 @@ public class FilterServiceImpl implements FilterService {
     @Transactional
     @Override
     public void updateExcludeKeywords(User user, String keywords) {
-        UserFilter filter = filterRepository.findByUser_Id(user.getId())
+        UserFilter filter = filterRepository.findWithUser(user.getId())
                 .orElseGet(() -> UserFilter.create(user));
         filter.setExcludeKeywords(keywords);
         filterRepository.save(filter);

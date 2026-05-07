@@ -1,7 +1,8 @@
 package by.system.gethired.service.embedding;
 
-import by.system.gethired.entity.Vacancy;
+import java.util.List;
 
 public interface VacancyEmbeddingService {
-    void generateAndSaveEmbedding(Vacancy vacancy);
+    void saveEmbedding(Long externalId, String text);
+    List<Long> findSimilarVacancyIds(List<Double> queryVector, int limit);
 }
